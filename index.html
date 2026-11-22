@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tender Search — Prototype (Phase 1)</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;margin:0;background:#f4f6f8;color:#1c2733;line-height:1.5}
+  header{background:#123a5c;color:#fff;padding:20px 18px}
+  header h1{margin:0;font-size:22px}
+  header p{margin:6px 0 0;opacity:.9}
+  .langtoggle{margin-top:12px}
+  .langtoggle button{border:1px solid #fff;background:transparent;color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:14px;margin-right:6px}
+  .langtoggle button.active{background:#fff;color:#123a5c;font-weight:700}
+  .wrap{max-width:960px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid #dbe3ea;border-radius:10px;padding:16px;margin:14px 0}
+  h2{margin:0 0 8px;font-size:19px}
+  h3{margin:14px 0 6px;font-size:16px}
+  .muted{color:#5a6b7a;font-size:13px}
+  .disclaimer{background:#fff7d6;border:1px solid #e8c95a;border-radius:8px;padding:10px 12px;font-size:13px;margin:14px 0}
+  .btn{border:1px solid #123a5c;background:#fff;color:#123a5c;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px;margin:4px 6px 4px 0}
+  .btn.primary{background:#123a5c;color:#fff}
+  .btn:hover{opacity:.85}
+  label.opt{display:block;padding:8px 10px;border:1px solid #dbe3ea;border-radius:8px;margin:6px 0;cursor:pointer}
+  label.opt input{margin-right:8px}
+  select,input[type=text]{padding:8px;border:1px solid #c4d0dc;border-radius:8px;font-size:15px}
+  .qual{display:flex;gap:10px;align-items:flex-start;border:1px solid #dbe3ea;border-radius:8px;padding:10px;margin:8px 0}
+  .qual input{margin-top:4px;transform:scale(1.3)}
+  .qual b{font-size:15px}
+  .qbtn{border:1px solid #888;background:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-weight:bold;flex:none}
+  .qpanel{display:none;background:#f0f6fb;border-left:4px solid #2a7ab8;padding:10px 12px;margin:8px 0 4px;font-size:14px}
+  .qpanel.open{display:block}
+  .pool-big{font-size:42px;font-weight:800;color:#123a5c;line-height:1}
+  .bar{height:14px;background:#e3e9ef;border-radius:7px;overflow:hidden;margin:10px 0}
+  .bar>div{height:100%;background:#2a7ab8}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border-bottom:1px solid #e3e9ef;padding:8px 6px;text-align:left;vertical-align:top}
+  th{background:#f0f3f6}
+  .ok{color:#0a7a3d;font-weight:700}
+  .miss{color:#b3261e;font-weight:700}
+  .tender{border:1px solid #dbe3ea;border-left:5px solid #2a7ab8;border-radius:8px;padding:12px;margin:10px 0;cursor:pointer}
+  .tender .tdetail{display:none;margin-top:8px}
+  .tender.open .tdetail{display:block}
+  .tender .due{font-size:13px;color:#5a6b7a;margin-top:2px}
+  .tender.near{border-left-color:#e8a13a}
+  .tender.closed{border-left-color:#999;opacity:.75}
+  .tag{display:inline-block;background:#eef3f7;border-radius:20px;padding:2px 9px;font-size:12px;margin:2px 4px 2px 0}
+  .pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700}
+  .pill.el{background:#dff2e4;color:#0a5c2a}
+  .pill.near{background:#fdeecb;color:#7a5200}
+  .pill.hide{background:#f2d7d5;color:#7a1a16}
+  .gain{font-weight:700;color:#0a5c2a}
+  .bubbles{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0}
+  .section-btn{display:block;width:100%;text-align:left;background:#eef3f7;border:2px solid #123a5c;border-radius:10px;padding:12px 14px;margin:16px 0 8px;font-size:18px;font-weight:700;color:#123a5c;cursor:pointer}
+  .bubble{width:110px;height:110px;border-radius:50%;background:#2a7ab8;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;border:none;font-size:15px;animation:float 3.5s ease-in-out infinite;box-shadow:0 4px 12px rgba(18,58,92,.25)}
+  .bubble.grey{background:#c9d1d8;color:#3a4650;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+  .bubble b{font-size:26px;line-height:1}
+  .bubble span{font-size:12px;padding:0 8px}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .bubble-detail{display:none;background:#f0f6fb;border-left:4px solid #2a7ab8;padding:12px;margin:8px 0;font-size:14px}
+  .bubble-detail.open{display:block}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="hdrTitle"></h1>
+  <p id="hdrSub"></p>
+  <div class="langtoggle">
+    <button id="lang-en" class="active" onclick="setLang('en')">EN</button>
+    <button id="lang-zh" onclick="setLang('zh')">中文</button>
+  </div>
+</header>
+<div class="wrap">
+
+<div class="disclaimer" id="disclaimer"></div>
+
+<div class="card">
+  <h2 id="tryTitle"></h2>
+  <p class="muted" id="trySub"></p>
+  <button class="btn primary" id="btn-us" onclick="preset('us')"></button>
+  <button class="btn" id="btn-china" onclick="preset('china')"></button>
+  <button class="btn" id="btn-none" onclick="preset('none')"></button>
+  <p id="presetNote" class="muted"></p>
+</div>
+
+<div class="card" id="step0">
+  <h2 id="step0Title"></h2>
+  <h3 id="usStatusTitle"></h3>
+  <label class="opt"><input type="radio" name="status" value="citizen" checked onchange="render()"> <span id="stCitizen"></span></label>
+  <label class="opt"><input type="radio" name="status" value="greencard" onchange="render()"> <span id="stGreen"></span></label>
+  <label class="opt"><input type="radio" name="status" value="other" onchange="render()"> <span id="stOther"></span></label>
+  <div id="countryRow" style="display:none;margin:8px 0">
+    <label><span id="countryLabel"></span>
+      <select id="country" onchange="render()"></select>
+    </label>
+    <p class="muted" id="countryNote"></p>
+  </div>
+
+  <h3 id="uscoTitle"></h3>
+  <p class="muted" id="uscoNote"></p>
+  <label class="opt"><input type="radio" name="usco" value="yes" onchange="setUsCompany(true)"> <span id="uscoYes"></span></label>
+  <label class="opt"><input type="radio" name="usco" value="no" checked onchange="setUsCompany(false)"> <span id="uscoNo"></span></label>
+  <div id="uscoHelp" class="qpanel"></div>
+  <button class="btn" id="uscoHelpBtn" onclick="document.getElementById('uscoHelp').classList.toggle('open')"></button>
+</div>
+
+<div class="card" id="step1">
+  <h2 id="step1Title"></h2>
+  <p class="muted" id="step1Sub"></p>
+  <div id="quals"></div>
+</div>
+
+<div class="card" id="pool">
+  <h2 id="poolTitle"></h2>
+  <div class="bubbles" id="bubbles"></div>
+  <div id="bubbleDetail" class="bubble-detail"></div>
+  <p class="muted" id="poolHint"></p>
+  <div id="poolDetails" style="display:none">
+  <div id="poolMain"></div>
+  <div id="poolGains"></div>
+  <h3 id="poolTableTitle"></h3>
+  <table>
+    <thead><tr><th id="thQual"></th><th id="thHave"></th><th id="thPoolIf"></th><th id="thGain"></th></tr></thead>
+    <tbody id="poolTable"></tbody>
+  </table>
+  <p class="muted" id="poolNote"></p>
+  </div>
+</div>
+
+<div class="card" id="results">
+  <h2 id="resultsTitle"></h2>
+  <div id="eligible"></div>
+  <button class="section-btn" id="nearTitle" onclick="toggleSection('near')"></button>
+  <div id="near" style="display:none"></div>
+  <button class="section-btn" id="hiddenTitle" onclick="toggleSection('hidden')"></button>
+  <div id="hidden" style="display:none"></div>
+  <button class="section-btn" id="closedTitle" onclick="toggleSection('closed')"></button>
+  <div id="closed" style="display:none"></div>
+</div>
+
+<div class="card">
+  <h2 id="feedbackTitle"></h2>
+  <p id="feedbackBody"></p>
+  <p class="muted" id="footerNote"></p>
+</div>
+
+</div>
+<script>
+let lang='en';
+const I18N={
+en:{
+ hdrTitle:'Tender Search — Phase 1 Prototype',
+ hdrSub:'Tick what you are legally qualified to do → see only the tenders you can bid on → see how big your pool is.',
+ disclaimer:'<b>For reference only — not legal, tax, or financial advice.</b> Qualification rules, tariff and tax rates change, and every tender has its own terms. Check the official source and the solicitation itself before you bid. We are not liable for decisions made from this information.',
+ tryTitle:'Try it quickly', trySub:'Presets fill in Step 0 + Step 1 for you. You can change any tick afterwards.',
+ presetUs:'US small factory — has US company, EIN, SAM.gov',
+ presetChina:'China factory — no US company',
+ presetReset:'Reset — nothing ticked',
+ presetNoteDefault:'Prototype data as of 2026-11-21. 7 active tenders in the pool. DLA flags (due 2026-11-20) is shown as closed.',
+ step0Title:'Step 0 — Who are you? (ask this first)',
+ usStatusTitle:'1. US status',
+ citizen:'US citizen', greencard:'Green-card holder', other:'Other',
+ countryLabel:'Which country are you / is your company in?',
+ countryNote:'Rules are not the same for every foreigner. China / India are not WTO GPA designated countries. Taiwan, Japan, South Korea, Canada, UK, EU, Australia, Singapore are GPA parties — they may be eligible on covered federal tenders above the GPA threshold, subject to that tender\u2019s own terms. Berry tenders still need 100% US-made, for everyone.',
+ uscoTitle:'2. Do you hold a US company?',
+ uscoNote:'This is Step 1 in the qualification list — asked here first, because without it most US tenders are not open to you. It is kept in sync with item 1 below.',
+ uscoYes:'Yes — I hold a US company (LLC / Corp)',
+ uscoNo:'No — I do not hold a US company',
+ uscoHelp:'<b>US company (LLC / Corp) — what it is:</b> a real US legal entity registered with a Secretary of State, with a US address (not just a P.O. box).<br><b>How to get it:</b> register in one state (e.g. Delaware, California, Texas), file articles, appoint a registered agent.<br><b>Cost:</b> varies by state — estimate ~$50–$500 filing fee; annual franchise tax / report fee varies. Check the state SOS site for the current fee. Do not quote one fixed national price — there isn\u2019t one.<br><b>What it unlocks:</b> the foundation for everything — without it, no EIN, no SAM.gov as a US entity, no US bank account, no direct federal / school bid as a US prime. Forming a company does not by itself make foreign-made goods "US-made".',
+ uscoHelpBtn:'? What is a US company?',
+ step1Title:'Step 1 — Qualification checklist',
+ step1Sub:'Tick what the bidding entity has. Tap ? for what it is, how to get it, how much, and what it unlocks. Never auto-ticked — you confirm each one.',
+ poolTitle:'Your pool', poolHint:'Tap a bubble to see its details.',
+ poolTableTitle:'Pool table — what you have / what you are missing',
+ thQual:'Qualification', thHave:'Have?', thPoolIf:'Pool if you add it', thGain:'Gain',
+ poolNote:'Pool % is of the 7 active tenders in this prototype feed, not of all US tenders. Only near-miss tenders (missing 1–2 qualifications) count in the gain. Far-miss tenders (missing 3+) are hidden from the gain — showing them would be meaningless.',
+ resultsTitle:'My tenders', nearTitle:'Near-miss — missing only 1–2 things',
+ hiddenTitle:'Hidden — missing 3+ things', closedTitle:'Closed',
+ feedbackTitle:'Report an error',
+ feedbackBody:'If a deadline, eligibility rule or rate on this page is wrong, please tell us — attach a screenshot and the tender link if you can. Feedback email address to be confirmed by Yanhua (not invented here).',
+ footerNote:'What this prototype does NOT do: no auto-submit / auto-bid (a human must review, sign and submit), no bid-price calculator yet (Phase 2), no accounts / login, no live daily update — the 8 tenders below are the real seed data from the live feed as of 2026-11-21, with no new tenders or values invented.',
+ have:'✓ Have', missed:'✗ Missed', nowCan:'can bid now', addLabel:'add', bestAdd:'best +1 attribute',
+ eligiblePill:'✓ Eligible', nearPill:'Near-miss', hiddenPill:'Hidden',
+ tapExpand:'Tap to expand', tapCollapse:'Tap to collapse',
+ dueLabel:'Due:', daysLeft:'days left', closedWord:'closed',
+ priceQtyLabel:'Price / quantity: not published in the feed — see the solicitation attachments.', sourceLabel:'View solicitation / source ↗', copyLinkLabel:'Copy link', copiedLabel:'Copied ✓',
+ needsLabel:'Needs:', missingLabel:'Missing:', haveAll:'You have everything this tender needs.',
+ seeTenders:'See these tenders ↓', seeNear:'See near-miss tenders ↓',
+ nothingEligible:'Nothing eligible yet — tick a qualification above, or try a preset.',
+ noNear:'No near-miss tenders.', nothingHidden:'Nothing hidden.',
+ hiddenCount:'tender(s) hidden — missing 3+ qualifications. Showing them would be meaningless.',
+ closedAsOf:'closed as of 2026-11-21',
+ best1:'Best 1 attribute:', best2:'Best 2 attributes:', allTicked:'— all ticked already',
+ gainExplainer:'If you add 1–2 attributes, how much % more opportunity do you get? That\u2019s the number above.',
+ nearMissLine:'Near-miss (missing 1–2):', hiddenLine:'Hidden (missing 3+):', notCounted:'— not counted in the gain below.',
+ canBidNowLine:'— you can bid on these now.',
+ whatIs:'What it is:', howTo:'How to get it:', costLabel:'Cost:', unlocksLabel:'What it unlocks:',
+ refOnly:'For reference only — not legal, tax, or financial advice.',
+ presetUsNote:'Preset applied: US small factory — US company, EIN, SAM.gov, past performance ticked.',
+ presetChinaNote:'Preset applied: China factory — status set to Other / China, no US company, nothing ticked. Scroll down to Step 0 to see it.',
+ presetNoneNote:'Reset — nothing ticked.',
+ bubbleNow:'Now: {pct}% — {n} of {m} tenders. These are the tenders you can bid on right now with what you have ticked.',
+ bubbleAdd:'Add {name} → {pct}% ({n} of {m}). Missing for the tenders this unlocks: {name}. Tap the ? next to this qualification in Step 1 to see how to get it.'
+},
+zh:{
+ hdrTitle:'招标搜索 · 第一版原型',
+ hdrSub:'打勾选你有的资质 → 只看你能投的标 → 看你的选择池有多大。',
+ disclaimer:'<b>仅供参考，不构成法律、税务或财务建议。</b>资质要求、关税和税率会变化，每个招标都有自己的条款。投标前请以官方来源和招标文件本身为准。因使用本信息所作决定，本平台不承担法律责任。',
+ tryTitle:'快速试一试', trySub:'下面是预设，一键填好，你也可以再改。',
+ presetUs:'美国小工厂（有美国公司、EIN、SAM.gov）',
+ presetChina:'中国工厂（没有美国公司）',
+ presetReset:'清空',
+ presetNoteDefault:'原型数据截至 2026-11-21，池子里 7 个未截止的标，DLA 旗帜标已截止，单独显示。',
+ step0Title:'第 0 步 — 你是谁？（先问这个）',
+ usStatusTitle:'1. 美国身份',
+ citizen:'美国公民', greencard:'绿卡持有者', other:'其他身份',
+ countryLabel:'你 / 你的公司在哪个国家？',
+ countryNote:'不是每个外国人都一样。中国 / 印度不是 WTO GPA 指定国家；台湾、日本、韩国、加拿大、英国、欧盟、澳大利亚、新加坡是 GPA 成员，在超过门槛金额的联邦标上可能可以投，还要看标书本身。Berry 军用纺织品标不管是谁都要 100% 美国制造。',
+ uscoTitle:'2. 你有没有美国注册公司？',
+ uscoNote:'这就是资质清单的第 1 项，在这里先问，因为没有它，大部分美国标都投不了。下面第 1 项会跟着一起变。',
+ uscoYes:'有，美国公司（LLC / Corp）',
+ uscoNo:'没有',
+ uscoHelp:'<b>美国公司（LLC / Corp）是什么：</b>在美国某个州注册的真实公司，有美国地址，不只是邮箱。<br><b>怎么办：</b>选一个州注册，提交注册文件，指定注册代理。<br><b>费用：</b>各州不同，约 $50–$500（估计值），以州政府官网为准。没有全国统一价。<br><b>有什么用：</b>是一切的基础。没有它，就没有 EIN、SAM.gov、美国银行账户，也不能直接投美国政府 / 学校的标。光有公司不等于产品就是美国制造。',
+ uscoHelpBtn:'? 什么是美国公司？',
+ step1Title:'第 1 步 — 资质清单',
+ step1Sub:'打勾选投标公司有的资质，点 ? 看说明。',
+ poolTitle:'你的选择池', poolHint:'点一个泡泡才显示它的具体内容。',
+ poolTableTitle:'池子表：有的 ✓ / 缺的 ✗',
+ thQual:'资质', thHave:'有吗', thPoolIf:'加了以后池子多大', thGain:'多多少',
+ poolNote:'百分比是按原型里 7 个未截止的标算的，不是全美国的标。只有缺 1–2 样的“接近”标才算进增长里，缺很多的标不算，算了也没意义。',
+ resultsTitle:'我能投的标', nearTitle:'就差 1–2 样就能投',
+ hiddenTitle:'暂时投不了（缺 3 样以上）', closedTitle:'已截止',
+ feedbackTitle:'报错 / 反馈',
+ feedbackBody:'如果页面上的截止日期、资质要求或价格错了，请发信告诉我们，最好附上截图和招标链接。反馈邮箱由 Yanhua 确认后填写，这里不编一个。',
+ footerNote:'本原型不做：不自动投标（必须真人检查、签字、提交），报价计算器是第二阶段，还没有账号登录，也没有实时更新。下面 8 个标是 2026-11-21 当天真实 feed 里的标，没有编新的。',
+ have:'✓ 有', missed:'✗ 缺', nowCan:'现在能投', addLabel:'加', bestAdd:'加 1 个资质最多',
+ eligiblePill:'✓ 能投', nearPill:'就差', hiddenPill:'缺',
+ tapExpand:'点开看详情', tapCollapse:'点一下收起',
+ dueLabel:'截止：', daysLeft:'天', closedWord:'已截止',
+ priceQtyLabel:'价格 / 数量：标书里没公布，见标书附件。', sourceLabel:'看标书原文 / 来源 ↗', copyLinkLabel:'复制链接', copiedLabel:'已复制 ✓',
+ needsLabel:'需要：', missingLabel:'缺：', haveAll:'你什么都有，可以投。',
+ seeTenders:'看这些标 ↓', seeNear:'看就差的标 ↓',
+ nothingEligible:'现在还没有能投的，先打勾，或点上面的预设试试。',
+ noNear:'没有就差 1–2 样的标。', nothingHidden:'没有被隐藏的标。',
+ hiddenCount:'个标被隐藏，缺 3 样以上，显示也没意义。',
+ closedAsOf:'截至 2026-11-21 已截止',
+ best1:'加 1 个资质最多：', best2:'加 2 个资质最多：', allTicked:'— 都打勾了',
+ gainExplainer:'加 1–2 个资质，能多多少百分比的机会？就是上面这个数。',
+ nearMissLine:'就差 1–2 样：', hiddenLine:'缺 3 样以上：', notCounted:'— 不算进下面的增长里。',
+ canBidNowLine:'— 现在能投。',
+ whatIs:'是什么：', howTo:'怎么办：', costLabel:'费用：', unlocksLabel:'有什么用：',
+ refOnly:'仅供参考，不构成法律、税务或财务建议。',
+ presetUsNote:'已选：美国小工厂（有美国公司、EIN、SAM.gov、过往业绩）。',
+ presetChinaNote:'已选：中国工厂（身份：其他 / 中国，没有美国公司，什么都没打勾）。往下看第 0 步就能看到。',
+ presetNoneNote:'已清空，什么都没打勾。',
+ bubbleNow:'现在能投：{pct}% — {n}/{m} 个标。这些就是你现在打勾后能投的标。',
+ bubbleAdd:'加{name} → {pct}%（{n} / {m} 个）。它能打开的标缺的就是这一项。第 1 步里点它旁边的 ? 可以看怎么办。'
+}
+};
+function t(k){return I18N[lang][k]||I18N.en[k]||k;}
+const COUNTRIES=[
+ {v:'China',en:'China',zh:'中国'},{v:'India',en:'India',zh:'印度'},
+ {v:'Vietnam',en:'Vietnam',zh:'越南'},{v:'Cambodia',en:'Cambodia',zh:'柬埔寨'},
+ {v:'Bangladesh',en:'Bangladesh',zh:'孟加拉'},{v:'Taiwan',en:'Taiwan',zh:'台湾'},
+ {v:'Japan',en:'Japan',zh:'日本'},{v:'South Korea',en:'South Korea',zh:'韩国'},
+ {v:'Canada',en:'Canada',zh:'加拿大'},{v:'UK',en:'UK',zh:'英国'},
+ {v:'EU',en:'EU country',zh:'欧盟国家'},{v:'Australia',en:'Australia',zh:'澳大利亚'},
+ {v:'Singapore',en:'Singapore',zh:'新加坡'},{v:'Other',en:'Other',zh:'其他'}
+];
+const QUALS=[
+ {id:'us_company',en:'US registered company (LLC / Corp)',zh:'美国注册公司（LLC / Corp）',
+  what:'A real US legal entity, registered with a Secretary of State, with a US address.',
+  whatZh:'在美国某个州注册的真实公司，有美国地址。',
+  how:'Register in one state, file articles, appoint a registered agent.',
+  howZh:'选一个州注册，提交注册文件，指定注册代理。',
+  cost:'Varies by state — estimate ~$50–$500 filing fee. Check the state SOS site.',
+  costZh:'各州不同，约 $50–$500（估计值），以州政府官网为准。',
+  unlock:'Foundation for EIN, SAM.gov, US bank account, direct federal / school bids.',
+  unlockZh:'是一切的基础，没有它就没有 EIN、SAM.gov、美国银行账户。'},
+ {id:'ein',en:'EIN (Employer Identification Number)',zh:'EIN 税号',
+  what:'Federal tax ID for the company, issued by the IRS.',
+  whatZh:'公司的联邦税号，由国税局发。',
+  how:'IRS online, Form SS-4, at irs.gov.',
+  howZh:'在国税局官网在线申请，SS-4 表。',
+  cost:'Free — verified (IRS). Beware third-party sites charging $50–$200+ for this free form.',
+  costZh:'免费（国税局确认）。小心第三方网站收 $50–$200+ 帮你填这张免费表。',
+  unlock:'Needed for SAM.gov, bank account, hiring, tax filings.',
+  unlockZh:'办 SAM.gov、银行账户、招人、报税都要用到。'},
+ {id:'sam',en:'SAM.gov registration ("All Awards" + UEI + CAGE)',zh:'SAM.gov 注册',
+  what:'The US federal vendor register. UEI is assigned during registration.',
+  whatZh:'美国联邦供应商登记，注册时会发 UEI。',
+  how:'sam.gov, sign in via Login.gov, entity registration.',
+  howZh:'在 sam.gov，用 Login.gov 登录后注册公司。',
+  cost:'Free — verified (GSA). Allow at least 10 business days for activation. Renew every 365 days.',
+  costZh:'免费（GSA 确认）。提交后至少等 10 个工作日激活，每 365 天续一次。',
+  unlock:'Gate to federal contracts — without active "All Awards" registration you cannot be awarded a federal prime contract. UEI-only is NOT enough to bid as a prime.',
+  unlockZh:'联邦合同的门，没有有效的 "All Awards" 注册就拿不到联邦主合同。光有 UEI 不够。'},
+ {id:'sba',en:'SBA small-business status',zh:'SBA 小企业身份',
+  what:'Self-certification in SAM.gov per NAICS code, using SBA size standards.',
+  whatZh:'在 SAM.gov 按 NAICS 码自我认定，符合 SBA 小企业规模标准。',
+  how:'Self-represent in SAM.gov; check sba.gov size standards for your NAICS.',
+  howZh:'在 SAM.gov 自我申报，对照 sba.gov 上你那个 NAICS 的规模标准。',
+  cost:'Free (self-certification).',
+  costZh:'免费（自我认定）。',
+  unlock:'Access to small-business set-asides (federal goal 23% of prime contracts). 8(a) / HUBZone / WOSB / veteran programmes usually require US-citizen ownership.',
+  unlockZh:'能投小企业预留标（联邦目标是 23% 的主合同给小企业）。8(a) / HUBZone / 女性 / 退伍军人项目一般要求美国公民持股。'},
+ {id:'usmade',en:'US-made production / Berry compliance',zh:'美国制造 / Berry 合规',
+  what:'Goods made in the US; Berry (DOD textiles) requires 100% domestic, including inputs.',
+  whatZh:'在美国生产的产品；Berry（国防部纺织品）要求 100% 美国产，包括原料。',
+  how:'Manufacture / finish in the US, or document the full chain of origin.',
+  howZh:'在美国生产 / 完成，或提供完整产地链证明。',
+  cost:'No fixed fee — cost is the production cost difference. Get a quote from a US factory.',
+  costZh:'没有固定费用，成本就是美国生产的差价，找美国工厂报价。',
+  unlock:'Unlocks DOD / DHS textile tenders. Without it, Berry tenders are not eligible. ISO does NOT make goods US-made.',
+  unlockZh:'能投国防部 / 国土安全部的纺织品标。没有它，Berry 标投不了。ISO 不能让产品变成美国制造。'},
+ {id:'iso',en:'ISO 9001 (quality management)',zh:'ISO 9001 质量管理',
+  what:'Certified quality management system, audited by an accredited registrar.',
+  whatZh:'经过认证机构审核的质量管理体系。',
+  how:'Hire an accredited registrar; Stage 1 document review + Stage 2 on-site audit.',
+  howZh:'找一家认证机构，先审文件，再现场审核。',
+  cost:'Estimate, wide range: roughly $3,000–$15,000 first certification for a small business (2026 guides). Get a written quote.',
+  costZh:'估计值，范围很大：小企业首次认证约 $3,000–$15,000（2026 年指南），以书面报价为准。',
+  unlock:'Often required or scored in larger / DOD / school tenders. Does NOT make goods US-made.',
+  unlockZh:'大标 / 国防部 / 学校标常要求或加分。不能让产品变成美国制造。'},
+ {id:'bond',en:'Bid / performance / payment bond capacity',zh:'投标 / 履约 / 付款保函能力',
+  what:'Surety bonds, via a Treasury Circular 570 carrier for federal work.',
+  whatZh:'担保公司出的保函，联邦项目要用财政部 570 号名单上的担保公司。',
+  how:'Through a surety company. Bid bond first, then performance + payment bonds if awarded.',
+  howZh:'找担保公司，先出投标保函，中标后再出履约和付款保函。',
+  cost:'Premium varies by credit / contract size — estimate only, get a surety quote. Federal construction: bonds required above $150,000; bid guarantee at least 20% of bid, capped at $3M.',
+  costZh:'保费看信用和合同金额，以担保公司报价为准。联邦建筑标 $150,000 以上要保函，投标保证金至少是报价的 20%，上限 $300 万。',
+  unlock:'Unlocks construction / larger tenders. For supply tenders (towels, apparel) bonds are often NOT required.',
+  unlockZh:'能投建筑 / 大标。供货标（毛巾、服装）一般不需要保函。'},
+ {id:'past_perf',en:'Past performance / references',zh:'过往业绩 / 推荐信',
+  what:'Past contracts, delivery records, 2–3 client references.',
+  whatZh:'过去的合同、交货记录、2–3 个客户推荐。',
+  how:'Your own records — past contracts with value, date, contact.',
+  howZh:'用你自己的记录：合同金额、日期、联系人。',
+  cost:'Free (your own records).',
+  costZh:'免费（自己的记录）。',
+  unlock:'Unlocks scored tenders; without it, start with smaller / simpler tenders first.',
+  unlockZh:'能投打分标；没有它就先从小标、简单标开始。'}
+];
+const TENDERS=[
+ {id:'arlington',source:'https://starbridge.ai/rfp/27-32-district-wide-athletic-apparel-contract-rfp',buyer:'Arlington ISD (Texas)',buyerZh:'Arlington 学区（得州）',title:'RFP 27-32 — Athletic apparel',titleZh:'RFP 27-32 — 运动服装',dueISO:'2026-12-04',dueTime:'',days:13,req:['us_company','ein','past_perf'],type:'School district',typeZh:'学区',note:'US vendor required in practice',noteZh:'实际上要美国供应商'},
+ {id:'columbia',source:'https://www.govcb.com/government-bids/RFP-C-VOLUME-PURCHASE-AGREEMENT-AND-23999935.htm',buyer:'Columbia Public Schools',buyerZh:'Columbia 公立学校',title:'RFP C-28001 — Athletic uniforms, apparel & equipment',titleZh:'RFP C-28001 — 运动服、服装和器材',dueISO:'2026-12-09',dueTime:'14:00 CT',days:18,req:['us_company','ein'],type:'School district',typeZh:'学区',note:'US vendor required in practice',noteZh:'实际上要美国供应商'},
+ {id:'lapac',source:'https://wwwcfprd.doa.louisiana.gov/osp/lapac/dspBid.cfm?search=segment&term=53000000',buyer:'Louisiana — LaPAC',buyerZh:'路易斯安那州 — LaPAC',title:'3000026801 — Knit polo and shirts',titleZh:'3000026801 — 针织 Polo 衫',dueISO:'2026-11-24',dueTime:'10:00 CT',days:3,req:['us_company','ein','sam'],type:'State',typeZh:'州政府',note:'Likely needs a US company to bid',noteZh:'可能需要美国公司才能投'},
+ {id:'henderson',source:'https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/3112/Hcs/3fa76ea6-c752-44bb-8f25-d6ec218ca0ff/Athletic-Equipment-and-Supplies-Bid-1-27-5-1.pdf?disposition=inline',buyer:'Henderson County Schools, KY',buyerZh:'Henderson 县学校（肯塔基）',title:'BID 1-27-5-1 — Athletic equipment / uniforms',titleZh:'BID 1-27-5-1 — 运动器材 / 制服',dueISO:'2027-01-05',dueTime:'11:00 CT',days:45,req:['us_company','ein','past_perf'],type:'School district',typeZh:'学区',note:'US vendor required in practice',noteZh:'实际上要美国供应商'},
+ {id:'iowa',source:'https://www.lightrfp.com/marketplace/bid/IOWA_EBID-7877/18651-promotional-products-preferred-supplier-program',buyer:'University of Iowa',buyerZh:'爱荷华大学',title:'RFP 18651 — Promotional products',titleZh:'RFP 18651 — 宣传品',dueISO:'2026-12-15',dueTime:'15:00 CT',days:24,req:['us_company','ein','sam'],type:'University',typeZh:'大学',note:'Likely needs a US company to bid',noteZh:'可能需要美国公司才能投'},
+ {id:'columbus',source:'https://biddingsimple.com/bids/01a1c7f0-f5f8-7529-84de-885bb5b8e605',buyer:'Columbus City Schools',buyerZh:'Columbus 市学校',title:'RFP 1122 — Uniform services',titleZh:'RFP 1122 — 制服服务',dueISO:'2026-12-22',dueTime:'16:00 ET',days:31,req:['us_company','ein','past_perf'],type:'School district',typeZh:'学区',note:'Questions due 2026-12-03 12:00 ET',noteZh:'提问截止 2026-12-03 12:00 ET'},
+ {id:'fci',source:'https://www.cleat.ai/government/contracts/institutional-linen-supply-washcloths-m3eu',buyer:'FCI Pekin (Federal Bureau of Prisons)',buyerZh:'FCI Pekin（联邦监狱局）',title:'Washcloths',titleZh:'毛巾',dueISO:'2026-11-24',dueTime:'13:00 CT',days:3,req:['us_company','ein','sam','usmade'],type:'Federal',typeZh:'联邦',note:'US entity + SAM.gov; check origin clause in the solicitation',noteZh:'要美国公司 + SAM.gov，产地条款以标书为准'},
+ {id:'dla',source:'https://www.cleat.ai/government/contracts/flag-identification-qi9i',buyer:'DLA (Defense Logistics Agency)',buyerZh:'DLA（国防后勤局）',title:'Flags',titleZh:'旗帜',dueISO:'2026-11-20',dueTime:'',days:-1,req:['us_company','ein','sam','usmade'],type:'Federal',typeZh:'联邦',note:'Berry Amendment — US-made required. Deadline passed as of 2026-11-21.',noteZh:'Berry 条款：必须美国制造。截至 2026-11-21 已截止。',closed:true}
+];
+const GPA=['Taiwan','Japan','South Korea','Canada','UK','EU','Australia','Singapore'];
+const state={ticks:{}};
+QUALS.forEach(q=>state.ticks[q.id]=false);
+function saveProfile(){try{localStorage.setItem('tenderProfile',JSON.stringify({status:status(),country:country(),ticks:state.ticks,lang:lang}));}catch(e){}}
+function loadProfile(){try{const raw=localStorage.getItem('tenderProfile');if(!raw)return;const p=JSON.parse(raw);if(p.status){document.querySelector('input[name=status][value='+p.status+']').checked=true;}if(p.country){document.getElementById('country').value=p.country;}if(p.ticks){Object.assign(state.ticks,p.ticks);}if(p.lang){lang=p.lang;}}catch(e){}}
+
+function fmtDate(iso){const p=iso.split('-');return p[1]+'/'+p[2]+'/'+p[0];}
+function qlabel(q){return lang==='zh'?q.zh:q.en;}
+function ttitle(t){return lang==='zh'?t.titleZh:t.title;}
+function tbuyer(t){return lang==='zh'?t.buyerZh:t.buyer;}
+function ttype(t){return lang==='zh'?t.typeZh:t.type;}
+function tnote(t){return lang==='zh'?t.noteZh:t.note;}
+function status(){return document.querySelector('input[name=status]:checked').value;}
+function country(){return document.getElementById('country').value;}
+function setLang(l){lang=l;document.getElementById('lang-en').classList.toggle('active',l==='en');document.getElementById('lang-zh').classList.toggle('active',l==='zh');document.documentElement.lang=l==='zh'?'zh-CN':'en';applyStatic();render();}
+function toggleSection(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function applyStatic(){
+ const set=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
+ set('hdrTitle',t('hdrTitle')); set('hdrSub',t('hdrSub')); set('disclaimer',t('disclaimer'));
+ set('tryTitle',t('tryTitle')); set('trySub',t('trySub'));
+ set('btn-us',t('presetUs')); set('btn-china',t('presetChina')); set('btn-none',t('presetReset'));
+ set('step0Title',t('step0Title')); set('usStatusTitle',t('usStatusTitle'));
+ set('stCitizen',t('citizen')); set('stGreen',t('greencard')); set('stOther',t('other'));
+ set('countryLabel',t('countryLabel')); set('countryNote',t('countryNote'));
+ set('uscoTitle',t('uscoTitle')); set('uscoNote',t('uscoNote'));
+ set('uscoYes',t('uscoYes')); set('uscoNo',t('uscoNo'));
+ set('uscoHelp',t('uscoHelp')); set('uscoHelpBtn',t('uscoHelpBtn'));
+ set('step1Title',t('step1Title')); set('step1Sub',t('step1Sub'));
+ set('poolTitle',t('poolTitle')); set('poolHint',t('poolHint')); set('poolTableTitle',t('poolTableTitle'));
+ set('thQual',t('thQual')); set('thHave',t('thHave')); set('thPoolIf',t('thPoolIf')); set('thGain',t('thGain'));
+ set('poolNote',t('poolNote'));
+ set('resultsTitle',t('resultsTitle')); set('nearTitle',t('nearTitle')); set('hiddenTitle',t('hiddenTitle')); set('closedTitle',t('closedTitle'));
+ set('feedbackTitle',t('feedbackTitle')); set('feedbackBody',t('feedbackBody')); set('footerNote',t('footerNote'));
+ const sel=document.getElementById('country'); const cur=sel.value||'China';
+ sel.innerHTML=COUNTRIES.map(c=>`<option value="${c.v}" ${c.v===cur?'selected':''}>${lang==='zh'?c.zh:c.en}</option>`).join('');
+ const pn=document.getElementById('presetNote'); if(pn && !pn.dataset.touched) pn.textContent=t('presetNoteDefault');
+}
+function setUsCompany(v){state.ticks.us_company=v;document.querySelector('input[name=usco][value="'+(v?'yes':'no')+'"]').checked=true;const cb=document.getElementById('cb-us_company');if(cb)cb.checked=v;render();}
+function missingFor(t){
+ const miss=t.req.filter(r=>!state.ticks[r]);
+ if(status()==='other' && !GPA.includes(country()) && !state.ticks.us_company){
+   if(!miss.includes('us_company')) miss.push('us_company');
+ }
+ return miss;
+}
+function qname(id){const q=QUALS.find(x=>x.id===id);return q?qlabel(q):id;}
+function renderQuals(){
+ document.getElementById('quals').innerHTML=QUALS.map(q=>{
+  const what=lang==='zh'?q.whatZh:q.what, how=lang==='zh'?q.howZh:q.how,
+        cost=lang==='zh'?q.costZh:q.cost, unlock=lang==='zh'?q.unlockZh:q.unlock;
+  return `<div class="qual"><input type="checkbox" id="cb-${q.id}" ${state.ticks[q.id]?'checked':''} onchange="state.ticks['${q.id}']=this.checked; if('${q.id}'==='us_company') document.querySelector('input[name=usco][value=&quot;'+(this.checked?'yes':'no')+'&quot;]').checked=true; render()">
+  <div style="flex:1"><b>${qlabel(q)}</b>
+  <button class="qbtn" onclick="document.getElementById('qp-${q.id}').classList.toggle('open')" title="?">?</button>
+  <div class="qpanel" id="qp-${q.id}"><b>${t('whatIs')}</b> ${what}<br><b>${t('howTo')}</b> ${how}<br><b>${t('costLabel')}</b> ${cost}<br><b>${t('unlocksLabel')}</b> ${unlock}<br><span class="muted">${t('refOnly')}</span></div>
+  </div></div>`;
+ }).join('');
+}
+function eligibleCount(ticks){
+ return TENDERS.filter(t=>!t.closed).filter(t=>{
+   const miss=t.req.filter(r=>!ticks[r]);
+   if(status()==='other' && !GPA.includes(country()) && !ticks.us_company && !miss.includes('us_company')) miss.push('us_company');
+   return miss.length===0;
+ }).length;
+}
+function render(){
+ saveProfile();
+ window._openBubble=null; const pd=document.getElementById('poolDetails'); if(pd) pd.style.display='none';
+ const uscoYes=document.querySelector('input[name=usco][value="yes"]'); const uscoNo=document.querySelector('input[name=usco][value="no"]'); if(uscoYes&&uscoNo){uscoYes.checked=!!state.ticks.us_company; uscoNo.checked=!state.ticks.us_company;}
+ document.getElementById('countryRow').style.display=status()==='other'?'block':'none';
+ renderQuals();
+ const active=TENDERS.filter(t=>!t.closed);
+ const M=active.length;
+ const rows=active.map(t=>({t,miss:missingFor(t)}));
+ const elig=rows.filter(r=>r.miss.length===0);
+ const near=rows.filter(r=>r.miss.length>=1&&r.miss.length<=2);
+ const far=rows.filter(r=>r.miss.length>=3);
+ const pct=Math.round(elig.length/M*100);
+ const unticked=QUALS.filter(q=>!state.ticks[q.id]);
+ function gainWith(add){
+   const ticks={...state.ticks}; add.forEach(a=>ticks[a]=true);
+   const orig={...state.ticks}; Object.assign(state.ticks,ticks);
+   const n=eligibleCount(state.ticks); Object.assign(state.ticks,orig);
+   return n;
+ }
+ let best1=null,best2=null;
+ unticked.forEach(q=>{const n=gainWith([q.id]);const g=n-elig.length;if(!best1||g>best1.gain)best1={label:qlabel(q),gain:g,n};});
+ for(let i=0;i<unticked.length;i++)for(let j=i+1;j<unticked.length;j++){
+   const n=gainWith([unticked[i].id,unticked[j].id]);const g=n-elig.length;
+   if(!best2||g>best2.gain)best2={label:qlabel(unticked[i])+' + '+qlabel(unticked[j]),gain:g,n};
+ }
+ window.showBubble=function(which){
+   const d=document.getElementById('bubbleDetail');
+   if(window._openBubble===which){d.classList.remove('open');d.innerHTML='';document.getElementById('poolDetails').style.display='none';window._openBubble=null;return;}
+   window._openBubble=which;
+   if(which==='now') d.innerHTML='<b>'+t('bubbleNow').replace('{pct}',pct).replace('{n}',elig.length).replace('{m}',M)+'</b><br><a href="#results">'+t('seeTenders')+'</a>';
+   if(which.startsWith('add:')){
+     const id=which.slice(4); const q=QUALS.find(x=>x.id===id);
+     const n=gainWith([id]); const gp=Math.round(n/M*100);
+     d.innerHTML='<b>'+t('bubbleAdd').replace('{name}',qlabel(q)).replace('{pct}',gp).replace('{n}',n).replace('{m}',M)+'</b><br><a href="#results">'+t('seeNear')+'</a>';
+   }
+   d.classList.add('open');
+   document.getElementById('poolDetails').style.display='block';
+ };
+ document.getElementById('poolMain').innerHTML=
+   `<div class="pool-big">${pct}%</div>
+   <p><b>${elig.length} of ${M} tenders</b> ${t('canBidNowLine')}</p>
+   <div class="bar"><div style="width:${pct}%"></div></div>
+   <p class="muted">${t('nearMissLine')} ${near.length} tenders. ${t('hiddenLine')} ${far.length} tenders ${t('notCounted')}</p>`;
+ const pct1=best1?Math.round(best1.gain/M*100):0, pct2=best2?Math.round(best2.gain/M*100):0;
+ const sizeFor=p=>Math.round(80+p*0.9);
+ const litSize=sizeFor(pct);
+ const potentials=unticked.map(q=>{const n=gainWith([q.id]);return {q,n,p:Math.round(n/M*100)};}).filter(x=>x.n>elig.length).sort((a,b)=>b.p-a.p);
+ document.getElementById('bubbles').innerHTML=
+   `<button class="bubble" style="width:${litSize}px;height:${litSize}px" onclick="showBubble('now')"><b>${pct}%</b><span>${t('nowCan')}</span></button>`+
+   potentials.map((x,i)=>{const s=sizeFor(x.p);return `<button class="bubble grey" style="width:${s}px;height:${s}px;animation-delay:${(i+1)*0.6}s" onclick="showBubble('add:${x.q.id}')"><b>${x.p}%</b><span>${t('addLabel')} ${qlabel(x.q)}</span></button>`;}).join('');
+ document.getElementById('bubbleDetail').innerHTML='';
+ document.getElementById('poolGains').innerHTML=
+   `<p><b>${t('best1')}</b> ${best1?best1.label+' → <span class="gain">+'+pct1+'%</span> ('+elig.length+' → '+best1.n+' of '+M+')':t('allTicked')}</p>
+   <p><b>${t('best2')}</b> ${best2?best2.label+' → <span class="gain">+'+pct2+'%</span> ('+elig.length+' → '+best2.n+' of '+M+')':'—'}</p>
+   <p class="muted">${t('gainExplainer')}</p>`;
+ document.getElementById('poolTable').innerHTML=QUALS.map(q=>{
+   const has=state.ticks[q.id];
+   const n=has?elig.length:gainWith([q.id]);
+   const g=has?0:n-elig.length;
+   const gp=Math.round(g/M*100);
+   return `<tr><td>${qlabel(q)}</td><td class="${has?'ok':'miss'}">${has?t('have'):t('missed')}</td><td>${n} of ${M} (${Math.round(n/M*100)}%)</td><td>${has?'—':'+'+gp+'% (+'+g+')'}</td></tr>`;
+ }).join('');
+ const pill=r=>r.miss.length===0?t('eligiblePill'):r.miss.length<=2?t('nearPill')+' '+r.miss.length:t('hiddenPill')+' '+r.miss.length;
+ const pillCls=r=>r.miss.length===0?'el':r.miss.length<=2?'near':'hide';
+ const card=r=>`<div class="tender ${r.miss.length?'near':''}" onclick="this.classList.toggle('open')"><span class="pill ${pillCls(r)}">${pill(r)}</span>
+   <b> ${ttitle(r.t)}</b>
+   <div class="due">${t('dueLabel')} ${fmtDate(r.t.dueISO)} &nbsp;·&nbsp; ${t('tapExpand')}</div>
+   <div class="tdetail"><span class="muted">${tbuyer(r.t)} · ${ttype(r.t)}</span><br>
+   ${r.t.dueTime?'<span class="muted">'+r.t.dueTime+'</span><br>':''}
+   <span class="muted">${r.t.days>=0?r.t.days+' '+t('daysLeft'):t('closedWord')}</span><br>
+   <span class="tag">${t('needsLabel')} ${r.t.req.map(qname).join(' · ')}</span><br>
+   ${r.miss.length?'<span class="miss">'+t('missingLabel')+' '+r.miss.map(qname).join(' · ')+'</span>':'<span class="ok">'+t('haveAll')+'</span>'}<br>
+   <span class="muted">${tnote(r.t)}</span><br>
+   <span class="muted">${t('priceQtyLabel')||''}</span><br>
+   ${r.t.source?`<a href="${r.t.source}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${t('sourceLabel')}</a><br><span class="muted" style="word-break:break-all">${r.t.source}</span><br><button class="btn" onclick="event.stopPropagation();navigator.clipboard&&navigator.clipboard.writeText('${r.t.source}');this.textContent='${t('copiedLabel')}'">${t('copyLinkLabel')}</button>`:''}</div></div>`;
+ document.getElementById('eligible').innerHTML=elig.length?elig.map(card).join(''):'<p class="muted">'+t('nothingEligible')+'</p>';
+ document.getElementById('near').innerHTML=near.length?near.map(card).join(''):'<p class="muted">'+t('noNear')+'</p>';
+ document.getElementById('hidden').innerHTML=far.length?`<p>${far.length} ${t('hiddenCount')}</p>`+far.map(card).join(''):'<p class="muted">'+t('nothingHidden')+'</p>';
+ document.getElementById('closed').innerHTML=TENDERS.filter(x=>x.closed).map(x=>`<div class="tender closed" onclick="this.classList.toggle('open')"><b>${ttitle(x)}</b><div class="due">${t('dueLabel')} ${fmtDate(x.dueISO)} &nbsp;·&nbsp; ${t('tapExpand')}</div><div class="tdetail"><span class="muted">${tbuyer(x)} · ${ttype(x)} — ${t('closedAsOf')}</span><br><span class="muted">${tnote(x)}</span></div></div>`).join('');
+ document.getElementById('nearTitle').textContent=t('nearTitle')+' ('+near.length+') ▸';
+ document.getElementById('hiddenTitle').textContent=t('hiddenTitle')+' ('+far.length+') ▸';
+ document.getElementById('closedTitle').textContent=t('closedTitle')+' ('+TENDERS.filter(x=>x.closed).length+') ▸';
+}
+function preset(kind){
+ const all={us_company:false,ein:false,sam:false,sba:false,usmade:false,iso:false,bond:false,past_perf:false};
+ let note='';
+ if(kind==='us'){Object.assign(all,{us_company:true,ein:true,sam:true,past_perf:true});note=t('presetUsNote');}
+ if(kind==='china'){document.querySelector('input[name=status][value=other]').checked=true;document.getElementById('country').value='China';note=t('presetChinaNote');}
+ if(kind==='none'){note=t('presetNoneNote');}
+ if(kind!=='china'){document.querySelector('input[name=status][value=citizen]').checked=true;}
+ Object.assign(state.ticks,all);
+ document.querySelector('input[name=usco][value="'+(all.us_company?'yes':'no')+'"]').checked=true;
+ render();
+ ['us','china','none'].forEach(k=>{const b=document.getElementById('btn-'+k);if(b)b.classList.toggle('primary',k===kind);});
+ const pn=document.getElementById('presetNote'); if(pn){pn.dataset.touched='1';pn.innerHTML='<b>'+note+'</b>';}
+ document.getElementById('step0').scrollIntoView({behavior:'smooth'});
+}
+loadProfile();
+if(lang==='zh'){document.getElementById('lang-en').classList.remove('active');document.getElementById('lang-zh').classList.add('active');document.documentElement.lang='zh-CN';}
+applyStatic();
+render();
+</script>
+</body>
+</html>
