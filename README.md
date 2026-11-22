@@ -2,6 +2,8 @@
 
 Find US government and school tenders you are actually qualified to bid on.
 
+**Live demo:** https://muse.ai/s/tender-search-prototype-xzxh6xu28gl9qxt/v5TwIQP0G5AHKPrLOX58FLGNH6QOvVLh4qOlbkAoaO8
+
 ## What it does
 
 - **Step 0 — Who you are:** US status (citizen / green card / other + country) and whether you hold a US company (LLC / Corp), asked first.
