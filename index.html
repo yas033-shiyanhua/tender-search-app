@@ -155,7 +155,7 @@ en:{
  disclaimer:'<b>For reference only — not legal, tax, or financial advice.</b> Qualification rules, tariff and tax rates change, and every tender has its own terms. Check the official source and the solicitation itself before you bid. We are not liable for decisions made from this information.',
  tryTitle:'Try it quickly', trySub:'Presets fill in Step 0 + Step 1 for you. You can change any tick afterwards.',
  presetUs:'US small factory — has US company, EIN, SAM.gov',
- presetChina:'China factory — no US company',
+ presetChina:'Foreign factory — no US company',
  presetReset:'Reset — nothing ticked',
  presetNoteDefault:'Prototype data as of 2026-11-21. 7 active tenders in the pool. DLA flags (due 2026-11-20) is shown as closed.',
  step0Title:'Step 0 — Who are you? (ask this first)',
@@ -198,7 +198,7 @@ en:{
  whatIs:'What it is:', howTo:'How to get it:', costLabel:'Cost:', unlocksLabel:'What it unlocks:',
  refOnly:'For reference only — not legal, tax, or financial advice.',
  presetUsNote:'Preset applied: US small factory — US company, EIN, SAM.gov, past performance ticked.',
- presetChinaNote:'Preset applied: China factory — status set to Other / China, no US company, nothing ticked. Scroll down to Step 0 to see it.',
+ presetChinaNote:'Preset applied: Foreign factory — status set to Other, no US company, nothing ticked. Pick your country in Step 0. Scroll down to see it.',
  presetNoneNote:'Reset — nothing ticked.',
  bubbleNow:'Now: {pct}% — {n} of {m} tenders. These are the tenders you can bid on right now with what you have ticked.',
  bubbleAdd:'Add {name} → {pct}% ({n} of {m}). Missing for the tenders this unlocks: {name}. Tap the ? next to this qualification in Step 1 to see how to get it.'
@@ -209,7 +209,7 @@ zh:{
  disclaimer:'<b>仅供参考，不构成法律、税务或财务建议。</b>资质要求、关税和税率会变化，每个招标都有自己的条款。投标前请以官方来源和招标文件本身为准。因使用本信息所作决定，本平台不承担法律责任。',
  tryTitle:'快速试一试', trySub:'下面是预设，一键填好，你也可以再改。',
  presetUs:'美国小工厂（有美国公司、EIN、SAM.gov）',
- presetChina:'中国工厂（没有美国公司）',
+ presetChina:'外国工厂（没有美国公司）',
  presetReset:'清空',
  presetNoteDefault:'原型数据截至 2026-11-21，池子里 7 个未截止的标，DLA 旗帜标已截止，单独显示。',
  step0Title:'第 0 步 — 你是谁？（先问这个）',
@@ -252,7 +252,7 @@ zh:{
  whatIs:'是什么：', howTo:'怎么办：', costLabel:'费用：', unlocksLabel:'有什么用：',
  refOnly:'仅供参考，不构成法律、税务或财务建议。',
  presetUsNote:'已选：美国小工厂（有美国公司、EIN、SAM.gov、过往业绩）。',
- presetChinaNote:'已选：中国工厂（身份：其他 / 中国，没有美国公司，什么都没打勾）。往下看第 0 步就能看到。',
+ presetChinaNote:'已选：外国工厂（身份：其他，没有美国公司，什么都没打勾）。在第 0 步选你的国家。往下看就能看到。',
  presetNoneNote:'已清空，什么都没打勾。',
  bubbleNow:'现在能投：{pct}% — {n}/{m} 个标。这些就是你现在打勾后能投的标。',
  bubbleAdd:'加{name} → {pct}%（{n} / {m} 个）。它能打开的标缺的就是这一项。第 1 步里点它旁边的 ? 可以看怎么办。'
@@ -504,7 +504,7 @@ function preset(kind){
  const all={us_company:false,ein:false,sam:false,sba:false,usmade:false,iso:false,bond:false,past_perf:false};
  let note='';
  if(kind==='us'){Object.assign(all,{us_company:true,ein:true,sam:true,past_perf:true});note=t('presetUsNote');}
- if(kind==='china'){document.querySelector('input[name=status][value=other]').checked=true;document.getElementById('country').value='China';note=t('presetChinaNote');}
+ if(kind==='china'){document.querySelector('input[name=status][value=other]').checked=true;note=t('presetChinaNote');}
  if(kind==='none'){note=t('presetNoneNote');}
  if(kind!=='china'){document.querySelector('input[name=status][value=citizen]').checked=true;}
  Object.assign(state.ticks,all);
